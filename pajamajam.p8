@@ -1,18 +1,35 @@
 pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
-	x = 64  y = 64
-	function _update()
-	 if (btn(0)) then x=x-1 end
-	 if (btn(1)) then x=x+1 end
-	 if (btn(2)) then y=y-1 end
-	 if (btn(3)) then y=y+1 end
-	end
 
-	function _draw()
-	 cls(12)
-	 circfill(x,y,20,30)
+function _init()
+	--initialize player
+	player = {
+		x = 16,
+		y = 48
+	}
+end
+
+function _update()
+	if (btn(0)) then 
+		player.x = player.x - 1 
 	end
+	if (btn(1)) then 
+		player.x = player.x + 1 
+	end
+	if (btn(2)) then 
+		player.y = player.y - 1 
+	end
+	if (btn(3)) then 
+		player.y = player.y + 1 
+	end
+end
+
+function _draw()
+	cls(7)
+	circfill(player.x, player.y, 10, 4)
+end
+
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
