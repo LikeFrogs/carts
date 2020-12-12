@@ -1,10 +1,10 @@
 pico-8 cartridge // http://www.pico-8.com
-version 27
+version 29
 __lua__
 
 
 function _init()
-	--initialize player
+	--player
 	player = {
 		sprite = 1,
 		x = 16,
@@ -17,6 +17,8 @@ function _init()
 
 		flip = false,
 		falling = false,
+
+		animTime = 0,
 	}
 
 	--control variables
@@ -26,18 +28,29 @@ function _init()
 	maxHorizontalSpeed = 3
 	maxFallSpeed = 5
 	maxJumpSpeed = -4
+
+	--camera
+	cam = {
+		x = 0,
+		y = 0,
+	}
 end
 
-function _update()
+function _update()	
+	processPlayerMovement()
 
-	if not player.dx == 0 then
-		-- animation 
-		player.sprite += 1
-		if player.sprite == 3 then 
-			player.sprite = 1
-		end
- end
-	
+	checkCollisions()
+
+	animatePlayer()
+
+	--apply accumulated acceleration
+	player.x += player.dx
+	player.y += player.dy
+
+	cameraUpdate()
+end
+
+function processPlayerMovement()
 	--user input
 	if btn(0) then 
 		player.dx -= movementAcceleration
@@ -57,7 +70,7 @@ function _update()
 	--apply gravity
 	player.dy += gravity;
 
-	--apply max speeds
+	--cap player speeds
 	if player.dx > maxHorizontalSpeed then
 		player.dx = maxHorizontalSpeed
 	end
@@ -65,22 +78,38 @@ function _update()
 		player.dx = -maxHorizontalSpeed
 	end
 	player.dy = mid(maxJumpSpeed, player.dy, maxFallSpeed)
+end
 
-	--ground collision
-	if collide_map(player, "down", 0) and player.falling then
+function checkCollisions()
+	if collideMap(player, "down", 0) and player.falling then
 		player.dy = 0
 		player.falling = false
 		player.y-=((player.y+player.h+1)%8)-1
 	else
 		player.falling = true
 	end
-
-	--apply accumulated acceleration
-	player.x += player.dx
-	player.y += player.dy --
 end
 
-function collide_map(obj, aim, flag)
+function animatePlayer()
+	if btn(0) or btn(1) and not player.falling then
+		if time() - player.animTime > .07 then
+			player.animTime = time()
+			player.sprite += 1
+			if player.sprite == 3 then 
+				player.sprite = 1
+			end
+		end
+	elseif not player.falling then
+		player.sprite = 1		
+	end
+end
+
+function cameraUpdate()
+	cam.x = player.x - 64 + (player.w / 2)
+	camera(cam.x, cam.y)
+end
+
+function collideMap(obj, aim, flag)
 	local x=obj.x  local y=obj.y
 	local w=obj.w  local h=obj.h
    
@@ -122,15 +151,14 @@ function _draw()
 end
 
 __gfx__
-00000000cccccccccccccccccccccccccccccccccc177ccccccccccc000000000000000000000000000000000000000000000000000000000000000000000000
-00000000ccaccacc7777777788888888cccccccc1777777ccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-00000000ca99999ccccccccc99999999cccccccc77777777ccccc17ccccccccc0000000000000000000000000000000000000000000000000000000000000000
-00700700ca97997ccccccc7caaaaaaaacccccccc77777777cccc1777cccccccc0000000000000000000000000000000000000000000000000000000000000000
-00077000ca99999cccccc7ccbbbbbbbbcccccccc77777777ccccc17ccccccccc0000000000000000000000000000000000000000000000000000000000000000
-00077000ccaaaacccccccccc11111111cccccccc77777777cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-00700700ccaaaacccc00000022222222cccccccc11111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-00000000ccaccacc00000000cccccccccccccccccccccccc17cccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
-00000000ccaccacc00000000cccccccccccccccc00000000cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+00000000000a00a0000a00a088888888cccccccccc177ccccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+0000000000a00a0000a00a0099999999cccccccc1777777ccccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+000000000a9999900a999990aaaaaaaacccccccc77777777ccccc17ccccccccc0000000000000000000000000000000000000000000000000000000000000000
+007007000a9799700a979970bbbbbbbbcccccccc77777777cccc1777cccccccc0000000000000000000000000000000000000000000000000000000000000000
+000770000a9999900a99999011111111cccccccc77777777ccccc17ccccccccc0000000000000000000000000000000000000000000000000000000000000000
+0007700000aaaa0000aaaa0022222222cccccccc77777777cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+0070070000aaaa0000aaaa00cccccccccccccccc11111111cccccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
+0000000000a00a000a0000a0cccccccccccccccccccccccc17cccccccccccccc0000000000000000000000000000000000000000000000000000000000000000
 __gff__
 0000000100010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
