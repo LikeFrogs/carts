@@ -1,6 +1,8 @@
 pico-8 cartridge // http://www.pico-8.com
-version 29
+version 27
 __lua__
+
+// hi davis!
 
 function _init()
 	--initialize player
